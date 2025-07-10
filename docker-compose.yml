@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: chatapp_postgres
+    environment:
+      POSTGRES_DB: chatdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chatapp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ollama:
+    image: ollama/ollama
+    container_name: chatapp_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - chatapp_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  backend:
+    build: ./backend
+    container_name: chatapp_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/chatdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - chatapp_network
+
+  frontend:
+    build: ./frontend
+    container_name: chatapp_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+    networks:
+      - chatapp_network
+
+  openapi-generator:
+    image: openapitools/openapi-generator-cli
+    container_name: chatapp_openapi_generator
+    volumes:
+      - ./openapi:/local
+    working_dir: /local
+    entrypoint: ["tail", "-f", "/dev/null"]
+    networks:
+      - chatapp_network
+
+volumes:
+  postgres_data:
+  ollama_data:
+
+networks:
+  chatapp_network:
+    driver: bridge
+
