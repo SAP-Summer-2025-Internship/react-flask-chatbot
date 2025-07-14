@@ -1,0 +1,137 @@
+openapi: 3.0.1
+info:
+  title: SAP Intern API
+  description: API documentation for SAP internship project
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/chat:
+    post:
+      summary: Chat with LLM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                use_rag:
+                  type: boolean
+      responses:
+        '200':
+          description: LLM response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                  used_rag:
+                    type: boolean
+                  context_found:
+                    type: boolean
+                  context:
+                    type: string
+  /api/documents:
+    get:
+      summary: List all documents
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        content:
+                          type: string
+                        created_at:
+                          type: string
+                        chunk_count:
+                          type: integer
+                        embedding_count:
+                          type: integer
+    post:
+      summary: Add a new document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Document added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  document_id:
+                    type: integer
+                  chunks_count:
+                    type: integer
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  ollama:
+                    type: string
+                  database:
+                    type: string
+                  embeddings:
+                    type: string
+                  data_counts:
+                    type: object
+                  test_response:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: string
+  /api/embeddings/update:
+    post:
+      summary: Update all embeddings
+      responses:
+        '200':
+          description: Embeddings updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  total_chunks:
+                    type: integer
+                  embedded_chunks:
+                    type: integer

@@ -1,0 +1,6 @@
+flask
+flask-cors
+langchain-community
+flask_sqlalchemy
+psycopg2-binary
+faiss-cpu
